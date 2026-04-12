@@ -55,7 +55,3 @@ def logout():
         st.experimental_rerun()
     except AttributeError:
         st.rerun()
-
-
-if __name__ == "__main__":
-    st.write("This module contains the data viewer. Run `streamlit run login.py` to start the app.")

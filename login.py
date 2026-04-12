@@ -53,7 +53,7 @@ def rerun():
 
 def render_login_page():
     st.title("Login")
-    st.subheader("Please sign in to access the data viewer.")
+    st.subheader("Please sign in to access dashboard.")
 
     with st.form(key="login_form"):
         st.text_input("Username", key="login_username")
