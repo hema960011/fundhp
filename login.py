@@ -75,15 +75,7 @@ def render_login_page():
 
 
 def render_app_header(username: str):
-    title_col, control_col = st.columns([5, 1])
-    with title_col:
-        st.title("My Portfolio")
-    with control_col:
-        st.write("\n")
-        st.write("\n")
-        #st.markdown(f"**Logged in as**  \n**{username}**")
-        if st.button("Logout", key="top_logout"):
-            logout()
+    st.title("My Portfolio")
 
 
 def main():
