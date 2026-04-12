@@ -22,29 +22,17 @@ def fetch_sheet_data(script_url: str, sheet_name: str):
         return None
 
 def render_data_viewer(username: str):
-    # Initialize session state for selected sheet
-    if "selected_sheet" not in st.session_state:
-        st.session_state.selected_sheet = "Portfolio Overview"
+    # Tabs for selecting sheet
+    tab1, tab2 = st.tabs(["Portfolio Overview", "Dictionary"])
 
-    # Buttons to select sheet
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Portfolio Overview", key="portfolio_btn"):
-            st.session_state.selected_sheet = "Portfolio Overview"
-    with col2:
-        if st.button("Dictionary", key="dictionary_btn"):
-            st.session_state.selected_sheet = "Dictionary"
-
-    # Display selected sheet data
-    if st.session_state.selected_sheet == "Portfolio Overview":
+    with tab1:
         df = fetch_sheet_data(SCRIPT_URL, SHEET_NAME)
         if df is not None:
-            st.subheader(SHEET_NAME)
             st.dataframe(df, use_container_width=True)
-    elif st.session_state.selected_sheet == "Dictionary":
+
+    with tab2:
         d_df = fetch_sheet_data(SCRIPT_URL, DICT_SHEET_NAME)
         if d_df is not None:
-            st.subheader(DICT_SHEET_NAME)
             st.dataframe(d_df, use_container_width=True)
 
 def logout():
