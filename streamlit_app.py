@@ -36,6 +36,20 @@ def save_sheet_data(script_url: str, sheet_name: str, data: list):
         return False
 
 def render_data_viewer(username: str):
+    # Header with logout button
+    col1, col2, col3 = st.columns([3, 1, 1])
+    with col1:
+        st.title("My Portfolio")
+    with col2:
+        st.write("")
+        st.write(f"**User**: {username}")
+    with col3:
+        st.write("")
+        if st.button("Logout", key="logout_btn"):
+            logout()
+    
+    st.divider()
+    
     # Tabs for viewing and adding data
     tab1, tab2, tab3 = st.tabs(["Portfolio Overview", "Dictionary", "Add Data"])
 

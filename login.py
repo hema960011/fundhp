@@ -74,15 +74,10 @@ def render_login_page():
     )
 
 
-def render_app_header(username: str):
-    st.title("My Portfolio")
-
-
 def main():
     initialize_session_state()
 
     if st.session_state.logged_in:
-        render_app_header(st.session_state.username)
         render_data_viewer(st.session_state.username)
     else:
         render_login_page()
