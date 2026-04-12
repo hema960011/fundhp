@@ -55,3 +55,8 @@ def logout():
         st.experimental_rerun()
     except AttributeError:
         st.rerun()
+
+
+if __name__ == "__main__":
+    import login
+    login.main()
