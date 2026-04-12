@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
 import requests
-import json
 
-# Function to fetch data from Google Apps Script web app
-def fetch_sheet_data(script_url, sheet_name):
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMWXdHXnLfM0ijwaUAFgxBZgHdXoXFSa6BDaBQlT4VfC9E_PzWVsf0Znguj72rombh/exec"
+SHEET_NAME = "Portfolio Overview"
+DICT_SHEET_NAME = "Dictionary"
+
+def fetch_sheet_data(script_url: str, sheet_name: str):
     try:
         params = {"sheetName": sheet_name}
         response = requests.get(script_url, params=params)
@@ -13,34 +15,47 @@ def fetch_sheet_data(script_url, sheet_name):
         if isinstance(data, dict) and data.get("error"):
             st.error(data["error"])
             return None
-        df = pd.DataFrame(data[1:], columns=data[0])  # First row as headers
+        df = pd.DataFrame(data[1:], columns=data[0])
         return df
     except Exception as e:
         st.error(f"Error fetching data: {e}")
         return None
 
-# Streamlit app
-st.title("Google Sheets Data Viewer (via Apps Script)")
+def render_data_viewer(username: str):
+    # Initialize session state for selected sheet
+    if "selected_sheet" not in st.session_state:
+        st.session_state.selected_sheet = "Portfolio Overview"
 
-# Input for Apps Script URL and sheet name
-script_url = "https://script.google.com/macros/s/AKfycbyMWXdHXnLfM0ijwaUAFgxBZgHdXoXFSa6BDaBQlT4VfC9E_PzWVsf0Znguj72rombh/exec"
-sheet_name = "Portfolio Overview"
-dict_sheet_name = "Dictionary"
+    # Buttons to select sheet
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Portfolio Overview", key="portfolio_btn"):
+            st.session_state.selected_sheet = "Portfolio Overview"
+    with col2:
+        if st.button("Dictionary", key="dictionary_btn"):
+            st.session_state.selected_sheet = "Dictionary"
 
-if script_url and sheet_name:
-    df = fetch_sheet_data(script_url, sheet_name)
-    d_df = fetch_sheet_data(script_url, dict_sheet_name)
-    if df is not None:
-        st.subheader(f"{sheet_name}")
-        st.dataframe(df)
+    # Display selected sheet data
+    if st.session_state.selected_sheet == "Portfolio Overview":
+        df = fetch_sheet_data(SCRIPT_URL, SHEET_NAME)
+        if df is not None:
+            st.subheader(SHEET_NAME)
+            st.dataframe(df, use_container_width=True)
+    elif st.session_state.selected_sheet == "Dictionary":
+        d_df = fetch_sheet_data(SCRIPT_URL, DICT_SHEET_NAME)
+        if d_df is not None:
+            st.subheader(DICT_SHEET_NAME)
+            st.dataframe(d_df, use_container_width=True)
 
-        st.subheader(f"{dict_sheet_name}")
-        st.dataframe(d_df)
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.session_state.login_error = ""
+    try:
+        st.experimental_rerun()
+    except AttributeError:
+        st.rerun()
 
-        # Optional: Show some stats
-        #st.subheader("Data Summary")
-        #st.write(f"Number of rows: {len(df)}")
-        #st.write(f"Number of columns: {len(df.columns)}")
-        #st.write("Column names:", list(df.columns))
-else:
-    st.info("Please enter the Apps Script Web App URL and sheet name to load data.")
+
+if __name__ == "__main__":
+    st.write("This module contains the data viewer. Run `streamlit run login.py` to start the app.")

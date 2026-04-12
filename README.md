@@ -15,5 +15,7 @@ A simple Streamlit app template for you to modify!
 2. Run the app
 
    ```
-   $ streamlit run streamlit_app.py
+   $ streamlit run login.py
    ```
+
+   This starts the login page first, then loads the approved-user data viewer from `streamlit_app.py`.
