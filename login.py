@@ -6,24 +6,35 @@ st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 # Add custom CSS for full-width display
 st.markdown("""
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
         .main {
-            max-width: 100%;
-            padding-top: 0;
-            padding-bottom: 0;
-            padding-right: 0;
-            padding-left: 0;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         .block-container {
-            max-width: 100%;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-            padding-right: 1rem;
-            padding-left: 1rem;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 1rem !important;
+        }
+        [data-testid="stDataFrame"] {
+            width: 100% !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
 from streamlit_app import render_data_viewer, logout
+
+# Initialize session state at the very beginning
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.session_state.login_error = ""
 
 REGISTERED_USERS = {
     "alice": {
