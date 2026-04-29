@@ -1,7 +1,27 @@
 import hashlib
 import streamlit as st
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+
+# Add custom CSS for full-width display
+st.markdown("""
+    <style>
+        .main {
+            max-width: 100%;
+            padding-top: 0;
+            padding-bottom: 0;
+            padding-right: 0;
+            padding-left: 0;
+        }
+        .block-container {
+            max-width: 100%;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            padding-right: 1rem;
+            padding-left: 1rem;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 from streamlit_app import render_data_viewer, logout
 
