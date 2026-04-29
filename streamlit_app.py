@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import requests
+from charts import display_portfolio_charts
+from sheets_viewer import display_all_sheets
+from data_formatter import format_dataframe_for_display, style_dataframe
 
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzf0WEFtEKQo5dTCaTun5efjQtR4sZU95QcaJzjjbNX2-16-TS0BOZbCoBsi5MLX9Iv/exec"
 SHEET_NAME = "Portfolio Overview"
@@ -15,7 +18,8 @@ def fetch_sheet_data(script_url: str, sheet_name: str):
         if isinstance(data, dict) and data.get("error"):
             st.error(data["error"])
             return None
-        df = pd.DataFrame(data[1:], columns=data[0])
+        # Convert all columns to string type to avoid PyArrow type errors
+        df = pd.DataFrame(data[1:], columns=data[0]).astype(str)
         return df
     except Exception as e:
         st.error(f"Error fetching data: {e}")
@@ -50,46 +54,47 @@ def render_data_viewer(username: str):
     
     st.divider()
     
-    # Tabs for viewing and adding data
-    tab1, tab2, tab3 = st.tabs(["Portfolio Overview", "Dictionary", "Add Data"])
-
-    with tab1:
-        df = fetch_sheet_data(SCRIPT_URL, SHEET_NAME)
-        if df is not None:
-            st.dataframe(df, use_container_width=True)
-
-    with tab2:
-        d_df = fetch_sheet_data(SCRIPT_URL, DICT_SHEET_NAME)
-        if d_df is not None:
-            st.dataframe(d_df, use_container_width=True)
-
-    with tab3:
+    # Fetch all sheet names
+    try:
+        params = {"action": "sheets"}
+        response = requests.get(SCRIPT_URL, params=params)
+        response.raise_for_status()
+        all_sheets = response.json()
+    except Exception as e:
+        st.error(f"Error fetching sheet names: {e}")
+        all_sheets = [SHEET_NAME, DICT_SHEET_NAME]
+    
+    # Create tabs for each sheet, plus Add Data and Charts tabs
+    tab_names = all_sheets + ["Add Data", "Charts"]
+    tabs = st.tabs(tab_names)
+    
+    # Display each sheet as a tab
+    for idx, sheet_name in enumerate(all_sheets):
+        with tabs[idx]:
+            st.subheader(sheet_name)
+            df = fetch_sheet_data(SCRIPT_URL, sheet_name)
+            if df is not None:
+                df_formatted = format_dataframe_for_display(df, sheet_name)
+                st.dataframe(style_dataframe(df_formatted), use_container_width=True, hide_index=True)
+    
+    # Add Data tab
+    with tabs[len(all_sheets)]:
         st.subheader("Add New Data")
         sheet_names = ["Robinhood", "ZerodhaUMF"]
         sheet_choice = st.selectbox("Select Sheet", sheet_names, key="sheet_choice")
         
-        def lookup_fund():
-            id_val = st.session_state.get("id_input", "").strip()
-            if id_val:
-                d_df = fetch_sheet_data(SCRIPT_URL, DICT_SHEET_NAME)
-                if d_df is not None:
-                    # Assume columns are named "ID" and "FUND NAME"
-                    if "ID" in d_df.columns and "FUND NAME" in d_df.columns:
-                        row = d_df[d_df["ID"].astype(str) == id_val]
-                        if not row.empty:
-                            st.session_state.fund_name = str(row["FUND NAME"].values[0])
-                        else:
-                            st.session_state.fund_name = ""
-                    else:
-                        st.error("Dictionary sheet must have 'ID' and 'FUND NAME' columns.")
-                        st.session_state.fund_name = ""
-                else:
-                    st.session_state.fund_name = ""
-            else:
-                st.session_state.fund_name = ""
+        id_input = st.text_input("ID", key="id_input")
         
-        id_input = st.text_input("ID", key="id_input", on_change=lookup_fund)
-        fund_name = st.text_input("Fund Name", value=st.session_state.get('fund_name', ''), key="fund_name_input")
+        # Lookup fund name based on ID
+        fund_name_value = ""
+        if id_input.strip():
+            d_df = fetch_sheet_data(SCRIPT_URL, DICT_SHEET_NAME)
+            if d_df is not None and "ID" in d_df.columns and "FUND NAME" in d_df.columns:
+                row = d_df[d_df["ID"].astype(str) == id_input.strip()]
+                if not row.empty:
+                    fund_name_value = str(row["FUND NAME"].values[0])
+        
+        fund_name = st.text_input("Fund Name", value=fund_name_value, key="fund_name_input")
         trade_date = st.date_input("Trade Date")
         quantity = st.number_input("Quantity", step=1)
         price = st.number_input("Price", step=0.01)
@@ -105,6 +110,14 @@ def render_data_viewer(username: str):
                     st.rerun()
             else:
                 st.error("Failed to add data.")
+
+    # Charts tab
+    with tabs[len(all_sheets) + 1]:
+        df = fetch_sheet_data(SCRIPT_URL, SHEET_NAME)
+        if df is not None:
+            display_portfolio_charts(df)
+        else:
+            st.info("No portfolio data available to display charts.")
 
 def get_sheet_names(script_url: str):
     try:

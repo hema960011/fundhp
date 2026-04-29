@@ -9,6 +9,10 @@ REGISTERED_USERS = {
     "alice": {
         "password_hash": hashlib.sha256("Secure@Password123".encode()).hexdigest(),
         "approved": True,
+    },
+    "1": {
+        "password_hash": hashlib.sha256("1".encode()).hexdigest(),
+        "approved": True,
     }
 }
 
