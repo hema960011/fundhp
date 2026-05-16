@@ -5,6 +5,39 @@ from charts import display_portfolio_charts
 from sheets_viewer import display_all_sheets
 from data_formatter import format_dataframe_for_display, style_dataframe
 
+# Set page config and CSS at the very start
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+
+st.markdown("""
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .main {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .block-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 1rem !important;
+        }
+        [data-testid="stDataFrame"] {
+            width: 100% !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Initialize session state ONCE at app start
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.session_state.login_error = ""
+
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzf0WEFtEKQo5dTCaTun5efjQtR4sZU95QcaJzjjbNX2-16-TS0BOZbCoBsi5MLX9Iv/exec"
 SHEET_NAME = "Portfolio Overview"
 DICT_SHEET_NAME = "Dictionary"
@@ -41,16 +74,16 @@ def save_sheet_data(script_url: str, sheet_name: str, data: list):
 
 def render_data_viewer(username: str):
     # Header with logout button
-    col1, col2, col3 = st.columns([3, 1, 1])
+    col1, col2 = st.columns([4, 1])
     with col1:
         st.title("My Portfolio")
     with col2:
-        st.write("")
-        st.write(f"**User**: {username}")
-    with col3:
-        st.write("")
-        if st.button("Logout", key="logout_btn"):
-            logout()
+        header_cols = st.columns([2, 1])
+        with header_cols[0]:
+            st.write(f"**User**: {username}")
+        with header_cols[1]:
+            # Use on_click callback to ensure logout only happens when button is clicked
+            st.button("Logout", key="logout_btn", on_click=logout)
     
     st.divider()
     
@@ -132,15 +165,17 @@ def get_sheet_names(script_url: str):
 
 
 def logout():
+    """Callback function for logout button - only called when button is clicked"""
     st.session_state.logged_in = False
     st.session_state.username = ""
     st.session_state.login_error = ""
-    try:
-        st.experimental_rerun()
-    except AttributeError:
-        st.rerun()
 
 
-if __name__ == "__main__":
-    import login
-    login.main()
+# Main app logic
+if __name__ == "__main__" or True:  # Always run (not using if __name__ since streamlit doesn't set it)
+    if st.session_state.logged_in:
+        render_data_viewer(st.session_state.username)
+    else:
+        # Import login UI here to avoid circular import
+        from login import render_login_page
+        render_login_page()

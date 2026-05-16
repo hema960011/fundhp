@@ -1,41 +1,6 @@
 import hashlib
 import streamlit as st
 
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
-
-# Add custom CSS for full-width display
-st.markdown("""
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
-        .main {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        .block-container {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 1rem !important;
-        }
-        [data-testid="stDataFrame"] {
-            width: 100% !important;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-from streamlit_app import render_data_viewer, logout
-
-# Initialize session state at the very beginning
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.username = ""
-    st.session_state.login_error = ""
-
 REGISTERED_USERS = {
     "alice": {
         "password_hash": hashlib.sha256("Secure@Password123".encode()).hexdigest(),
@@ -61,10 +26,8 @@ def verify_user(username: str, password: str) -> tuple[bool, str]:
     return True, ""
 
 def initialize_session_state():
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-        st.session_state.username = ""
-        st.session_state.login_error = ""
+    # Session state already initialized in streamlit_app.py
+    pass
 
 def login():
     username = st.session_state.get("login_username", "").strip()
@@ -107,15 +70,3 @@ def render_login_page():
         "Only registered and approved users may sign in and access the data. "
         "If your account is not approved, contact the app administrator."
     )
-
-
-def main():
-    initialize_session_state()
-
-    if st.session_state.logged_in:
-        render_data_viewer(st.session_state.username)
-    else:
-        render_login_page()
-
-if __name__ == "__main__":
-    main()
