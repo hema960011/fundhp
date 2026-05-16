@@ -73,17 +73,16 @@ def save_sheet_data(script_url: str, sheet_name: str, data: list):
         return False
 
 def render_data_viewer(username: str):
-    # Header with logout button
-    col1, col2 = st.columns([4, 1])
+    # Header with user details and logout button on same line
+    col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
         st.title("My Portfolio")
     with col2:
-        header_cols = st.columns([2, 1])
-        with header_cols[0]:
-            st.write(f"**User**: {username}")
-        with header_cols[1]:
-            # Use on_click callback to ensure logout only happens when button is clicked
-            st.button("Logout", key="logout_btn", on_click=logout)
+        st.markdown(f"<div style='display: flex; align-items: center; height: 100%; padding-top: 50px;'><b>User: {username}</b></div>", unsafe_allow_html=True)
+    with col3:
+        st.markdown("<div style='display: flex; align-items: center; height: 100%; padding-top: 40px; justify-content: flex-end;'>", unsafe_allow_html=True)
+        st.button("Logout", key="logout_btn", on_click=logout)
+        st.markdown("</div>", unsafe_allow_html=True)
     
     st.divider()
     
